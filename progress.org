@@ -1,0 +1,23 @@
+* TODO final touches [75%]
+  - [X] true positive on fully qualified ~Multi~
+  - [X] test Oban.Pro
+  - [X] delete tracer
+  - [X] collapse common
+  - [X] fix the dependency errors
+  - [ ] check ALL the credos internally
+  - [X] run it on some Oban workers
+    - [X] in the wild
+      - [X] runtime failures
+        - [X] ~module Credo.Check is not loaded and could not be found~
+          - https://github.com/beyond-all-reason/teiserver
+          - https://github.com/Magickbase/godwoken_explorer
+      - [X] true positives
+        - [X] https://github.com/cambiatus/backend/blob/master/lib/cambiatus/workers/contribution_paypal_worker.ex#L16
+        - [X] https://github.com/cambiatus/backend/blob/master/lib/cambiatus/workers/monthly_digest_worker.ex#L14
+      - [X] false negatives
+      - [X] true negatives
+        - [X] https://github.com/BanchanArt/banchan/blob/main/lib/banchan/workers/thumbnailer.ex#L37
+  - [ ] ignore methods that do not have Multi.new
+* TODO nice to haves
+  - [ ] config option for the module name of ~Repo~
+  - [ ] property testing for aliasing & free/pro Oban

@@ -74,30 +74,25 @@ defmodule CredoCheckErrorHandlingEctoOban.Check.TransactionErrorInObanJob do
 
   defp walk({{:., metadata, [{:__aliases__, _, module}, :new]}, _, body}, acc) do
     acc =
-      module
-      |> Enum.any?(&(&1 == :Multi))
-      |> case do
-        true -> Map.put(acc, :multi_new, metadata)
-        false -> acc
-      end
+    if Enum.any?(module, &(&1 == :Multi)) do
+      Map.put(acc, :multi_new, metadata)
+    else
+      acc
+    end
 
     Enum.reduce(body, acc, &walk/2)
   end
 
   defp walk({{:., metadata, [{:__aliases__, _, module}, :transaction]}, _, body}, acc) do
     acc =
-      module
-      |> Enum.any?(&(&1 == :Repo or &1 == :repo))
-      |> case do
-        true -> Map.put(acc, :repo_transaction, metadata)
-        false -> acc
+      if Enum.any?(module, &(&1 == :Repo or &1 == :repo)) do
+        Map.put(acc, :repo_transaction, metadata)
+      else
+        acc
       end
 
     Enum.reduce(body, acc, &walk/2)
   end
-
-  defp walk({{:., _, [{:__aliases__, _, _}, _]}, _, body}, acc),
-    do: Enum.reduce(body, acc, &walk/2)
 
   defp walk({:case, _, [[do: clauses]]}, acc) do
     Enum.reduce(clauses, acc, &look_at_error_handling/2)
@@ -121,14 +116,40 @@ defmodule CredoCheckErrorHandlingEctoOban.Check.TransactionErrorInObanJob do
     Enum.reduce(clauses, acc, &look_at_error_handling/2)
   end
 
-  # NOTE: special exception for commented out code being checked in -- I have deleted this waaaaaay too many times now.
-  #
-  # defp walk(zut_alors, acc) do
-  #   dbg(zut_alors)
-  #   acc
-  # end
+  # this open list will probably be a papercut, but opting in is safe
+  @expected_methods [
+    :!,
+    :&&,
+    :.,
+    :=,
+    :__block__,
+    :if
+  ]
 
-  defp walk(_, acc), do: acc
+  defp walk({method, _, clauses}, acc) when method in @expected_methods do
+    Enum.reduce(clauses, acc, &walk/2)
+  end
+
+  # I wish single line if blocks were wrapped in the standard 3 tuple, flatten is painful here
+  defp walk([do: do_clauses, else: else_clauses], acc) do
+    [else_clauses, do_clauses] =
+      Enum.map([else_clauses, do_clauses], fn clauses ->
+        clauses
+        |> List.wrap()
+        |> List.flatten()
+      end)
+
+    acc = Enum.reduce(do_clauses, acc, &walk/2)
+    Enum.reduce(else_clauses, acc, &walk/2)
+  end
+
+  defp walk({{:., _, inner_clauses}, _, outer_clauses}, acc) do
+    Enum.reduce(outer_clauses, Enum.reduce(inner_clauses, acc, &walk/2), &walk/2)
+  end
+
+  defp walk(_, acc) do
+    acc
+  end
 
   # this is the happy case
   defp look_at_error_handling(
@@ -145,10 +166,8 @@ defmodule CredoCheckErrorHandlingEctoOban.Check.TransactionErrorInObanJob do
   defp look_at_error_handling({:->, _, [[{:=, _, _}], {:error, _, _}]}, acc), do: acc
   defp look_at_error_handling({:->, _, [[{:{}, _, [:error, _, _]}], {:error, _}]}, acc), do: acc
 
-  # this area is noise
-  #
   # would be better to scan and skip a method definition without Multi.new
-  defp look_at_error_handling({:->, _, _}, acc), do: acc
+  defp look_at_error_handling({_, _, _}, acc), do: acc
 
   # This HAS to be improvable. It used to have more than one caller.
   defp in_header?([{:__aliases__, _, _}, [do: {:__block__, [], header}]], section, module) do
@@ -168,7 +187,7 @@ defmodule CredoCheckErrorHandlingEctoOban.Check.TransactionErrorInObanJob do
 
   defp in_header?(_, _, _), do: false
 
-  defp issues_for_function_definition([_, [do: body]], _line, issues, _, issue_meta) do
+  defp issues_for_function_definition([_, [do: body]], _, issues, _, issue_meta) do
     case walk(body, %{}) do
       # happy path!
       %{:multi_new => _, :repo_transaction => _, error: {:error, _}} ->
@@ -182,6 +201,8 @@ defmodule CredoCheckErrorHandlingEctoOban.Check.TransactionErrorInObanJob do
         issues
     end
   end
+
+  defp issues_for_function_definition(_, _, issues, _, _), do: issues
 
   defp issue_for(trigger, line_no, issue_meta) do
     format_issue(
