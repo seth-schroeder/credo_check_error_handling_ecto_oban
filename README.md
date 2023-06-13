@@ -5,6 +5,8 @@ This is a custom [Credo](https://github.com/rrrene/credo) check that looks for a
 * [Ecto.Repo.transaction/2](https://hexdocs.pm/ecto/Ecto.Repo.html#c:transaction/2) will return a 4 tuple when an error occurs inside a Multi.
 * An [Oban](https://github.com/sorentwo/oban) worker that returns an error 4 tuple will be considered a success.
 
+Many thanks to [@andersonmcook](https://github.com/andersonmcook) for being the human version of this check!
+
 Below is the warning that Oban gives when this happens in `iex`
 
 ```elixir
