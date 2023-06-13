@@ -46,8 +46,8 @@ defmodule CredoCheckErrorHandlingEctoOban.Check.TransactionErrorInObanJob do
     |> Multi.error(:alas, :poor_yorick)
     |> Repo.transaction()
     |> case do
-         {:ok, _} -> :ok
          {:error, :alas, _, _} -> {:error, "we knew him well"}
+         any -> any
        end
   end
   ```
@@ -99,8 +99,8 @@ defmodule CredoCheckErrorHandlingEctoOban.Check.TransactionErrorInObanJob do
         |> Multi.error(:alas, :poor_yorick)
         |> Repo.transaction()
         |> case do
-             {:ok, _} -> :ok
              {:error, :alas, _, _} -> {:error, "we knew him well"}
+             any -> any
            end
       end
       ```

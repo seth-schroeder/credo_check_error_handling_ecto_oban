@@ -42,8 +42,8 @@ Here is a possible resolution (mapping the 4 tuple to a 2 tuple):
     |> Multi.error(:alas, :poor_yorick)
     |> Repo.transaction()
     |> case do
-         {:ok, _} -> :ok
          {:error, :alas, _, _} -> {:error, "we knew him well"}
+         any -> any
        end
   end
   ```
