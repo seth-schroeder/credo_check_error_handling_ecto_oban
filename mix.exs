@@ -4,10 +4,16 @@ defmodule CredoCheckErrorHandlingEctoOban.MixProject do
   def project do
     [
       app: :credo_check_error_handling_ecto_oban,
-      version: "0.9.0",
+      deps: deps(),
+      docs: [
+        main: "CredoCheckErrorHandlingEctoOban.Check.TransactionErrorInObanJob",
+        extras: ["README.md"]
+      ],
       elixir: "~> 1.14",
+      licenses: "GPL-3.0-or-later",
+      source_url: "https://github.com/seth-schroeder/credo_check_error_handling_ecto_oban",
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      version: "0.9.0",
     ]
   end
 
@@ -21,7 +27,10 @@ defmodule CredoCheckErrorHandlingEctoOban.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:credo, "~> 1.5", only: [:dev, :test], runtime: false}
+      {:credo, "~> 1.5", only: [:dev, :test], runtime: false},
+      {:ex_doc, "~> 0.27", only: :dev, runtime: false}
+      # maybe some day
+      # {:makeup_org, ">= 0.0.0", only: :dev, runtime: false}
     ]
   end
 end

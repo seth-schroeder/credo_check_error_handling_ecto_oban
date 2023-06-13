@@ -26,7 +26,8 @@
     - [ ] publish to mix
     - [ ] submit PRs for the true positives
   - [X] write local script to regression test these repos
-* TODO nice to haves [50%]
+* TODO nice to haves [33%]
   - [X] config option for the module name of ~Repo~
     - in practice it has been fine to look for ~repo~ or ~Repo~
   - [ ] property testing for aliasing & free/pro Oban
+  - [ ] ~org-mode~ support in https://github.com/elixir-makeup
