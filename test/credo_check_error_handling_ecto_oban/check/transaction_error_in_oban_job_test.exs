@@ -11,8 +11,8 @@ defmodule CredoCheckErrorHandlingEctoOban.Check.TransactionErrorInObanJobTest do
         |> Multi.error(:alas, :poor_yorick)
         |> Repo.transaction()
         |> case do
-           {:ok, _} -> :ok
-           {:error, _, _, _} -> {:error, "we knew him well"}
+             {:ok, _} -> :ok
+             {:error, _, _, _} -> {:error, "we knew him well"}
            end
       end
       """
@@ -29,8 +29,8 @@ defmodule CredoCheckErrorHandlingEctoOban.Check.TransactionErrorInObanJobTest do
         |> Ecto.Multi.error(:alas, :poor_yorick)
         |> Repo.transaction()
         |> case do
-           {:ok, _} -> :ok
-           {:error, _, _, _} -> {:error, "we knew him well"}
+             {:ok, _} -> :ok
+             {:error, _, _, _} -> {:error, "we knew him well"}
            end
       end
       """
@@ -47,8 +47,8 @@ defmodule CredoCheckErrorHandlingEctoOban.Check.TransactionErrorInObanJobTest do
         |> Ecto.Multi.error(:alas, :poor_yorick)
         |> Repo.transaction()
         |> case do
-           {:ok, _} -> :ok
-           {:error, _, _, _} -> {:error, "we knew him well"}
+             {:ok, _} -> :ok
+             {:error, _, _, _} -> {:error, "we knew him well"}
            end
       end
       """
@@ -69,8 +69,8 @@ defmodule CredoCheckErrorHandlingEctoOban.Check.TransactionErrorInObanJobTest do
         |> Multi.error(:alas, :poor_yorick)
         |> Repo.transaction()
         |> case do
-           {:ok, _} -> :ok
-           {:error, _, _, _} -> {:error, "we knew him well"}
+             {:ok, _} -> :ok
+             {:error, _, _, _} -> {:error, "we knew him well"}
            end
       end
       """
@@ -112,9 +112,9 @@ defmodule CredoCheckErrorHandlingEctoOban.Check.TransactionErrorInObanJobTest do
     test "pipe chain returning a four tuple" do
       """
       def perform(%{}) do
-      Multi.new()
-      |> Multi.error(:alas, :poor_yorick)
-      |> Repo.transaction()
+        Multi.new()
+        |> Multi.error(:alas, :poor_yorick)
+        |> Repo.transaction()
       end
       """
       |> sample_code()
@@ -181,6 +181,29 @@ defmodule CredoCheckErrorHandlingEctoOban.Check.TransactionErrorInObanJobTest do
       |> to_source_file()
       |> run_check(Runner)
       |> assert_issue()
+    end
+  end
+
+  # For the future
+  @tag :skip
+  describe "false negatives" do
+    test "misled by error handling" do
+      """
+      def perform(%{}) do
+        Multi.new()
+        |> Multi.error(:alas, :poor_yorick)
+        |> Repo.transaction()
+
+        case {:ok} do
+          {:ok, _} -> :ok
+          {:error, _, _, _} -> {:error, "we knew him well"}
+        end
+      end
+      """
+      |> sample_code()
+      |> to_source_file()
+      |> run_check(Runner)
+      |> refute_issues()
     end
   end
 

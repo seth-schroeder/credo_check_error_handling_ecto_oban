@@ -1,23 +1,32 @@
-* TODO final touches [75%]
+* TODO final touches [77%]
   - [X] true positive on fully qualified ~Multi~
   - [X] test Oban.Pro
   - [X] delete tracer
   - [X] collapse common
   - [X] fix the dependency errors
-  - [ ] check ALL the credos internally
-  - [X] run it on some Oban workers
-    - [X] in the wild
-      - [X] runtime failures
-        - [X] ~module Credo.Check is not loaded and could not be found~
-          - https://github.com/beyond-all-reason/teiserver
-          - https://github.com/Magickbase/godwoken_explorer
-      - [X] true positives
-        - [X] https://github.com/cambiatus/backend/blob/master/lib/cambiatus/workers/contribution_paypal_worker.ex#L16
-        - [X] https://github.com/cambiatus/backend/blob/master/lib/cambiatus/workers/monthly_digest_worker.ex#L14
-      - [X] false negatives
-      - [X] true negatives
-        - [X] https://github.com/BanchanArt/banchan/blob/main/lib/banchan/workers/thumbnailer.ex#L37
-  - [ ] ignore methods that do not have Multi.new
-* TODO nice to haves
-  - [ ] config option for the module name of ~Repo~
+  - [X] check ALL the credos internally
+  - [-] find published code with...
+    - [X] true positives
+      - [X] https://github.com/cambiatus/backend/blob/master/lib/cambiatus/workers/contribution_paypal_worker.ex#L16
+      - [X] https://github.com/cambiatus/backend/blob/master/lib/cambiatus/workers/monthly_digest_worker.ex#L14
+      - [X] https://github.com/beyond-all-reason/teiserver/blob/master/lib/teiserver/game/tasks/achievement_cleanup_task.ex#L99
+    - [X] true negatives
+      - [X] https://github.com/BanchanArt/banchan/blob/main/lib/banchan/workers/thumbnailer.ex#L37
+      - [X] https://github.com/OpenFn/Lightning/blob/main/lib/lightning/accounts.ex#L442
+    - [X] false positive
+      - [X] https://github.com/bterone/g-searcher/blob/main/lib/g_searcher/search_results/search_worker.ex#L57
+        - significant effort required to fix this
+        - with error handling and Multi.new in separate functions, the linter would have to
+          become more of an interpreter. Or a terribly messy linter that tries to do too much.
+    - [ ] false negatives
+      - hard to find in the wild
+      - hard to recreate manually
+      - for "the future"
+  - [ ] cross link old repo
+    - [ ] publish to mix
+    - [ ] submit PRs for the true positives
+  - [X] write local script to regression test these repos
+* TODO nice to haves [50%]
+  - [X] config option for the module name of ~Repo~
+    - in practice it has been fine to look for ~repo~ or ~Repo~
   - [ ] property testing for aliasing & free/pro Oban

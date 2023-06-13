@@ -68,17 +68,35 @@ defmodule CredoCheckErrorHandlingEctoOban.Check.TransactionErrorInObanJob do
     {ast, issues}
   end
 
-  defp walk({:|>, [line: _, column: _], args}, acc) do
+  defp issues_for_function_definition([_, [do: body]], _, issues, _, issue_meta) do
+    case walk(body, %{}) do
+      # happy path!
+      %{:multi_new => _, :repo_transaction => _, error: {:error, _}} ->
+        issues
+
+      # warning, unable to find a 4 -> 2 tuple mapping!
+      %{:multi_new => [line: line, column: _column], :repo_transaction => _} ->
+        [issue_for("potential error handling concern", line, issue_meta) | issues]
+
+      _ ->
+        issues
+    end
+  end
+
+  defp issues_for_function_definition(_, _, issues, _, _), do: issues
+
+  # `walk` does the heavy lifting
+  defp walk({:|>, _, args}, acc) do
     Enum.reduce(args, acc, &walk/2)
   end
 
   defp walk({{:., metadata, [{:__aliases__, _, module}, :new]}, _, body}, acc) do
     acc =
-    if Enum.any?(module, &(&1 == :Multi)) do
-      Map.put(acc, :multi_new, metadata)
-    else
-      acc
-    end
+      if Enum.any?(module, &(&1 == :Multi)) do
+        Map.put(acc, :multi_new, metadata)
+      else
+        acc
+      end
 
     Enum.reduce(body, acc, &walk/2)
   end
@@ -186,23 +204,6 @@ defmodule CredoCheckErrorHandlingEctoOban.Check.TransactionErrorInObanJob do
   end
 
   defp in_header?(_, _, _), do: false
-
-  defp issues_for_function_definition([_, [do: body]], _, issues, _, issue_meta) do
-    case walk(body, %{}) do
-      # happy path!
-      %{:multi_new => _, :repo_transaction => _, error: {:error, _}} ->
-        issues
-
-      # warning, unable to find a 4 -> 2 tuple mapping!
-      %{:multi_new => [line: line, column: _column], :repo_transaction => _} ->
-        [issue_for("potential error handling concern", line, issue_meta) | issues]
-
-      _ ->
-        issues
-    end
-  end
-
-  defp issues_for_function_definition(_, _, issues, _, _), do: issues
 
   defp issue_for(trigger, line_no, issue_meta) do
     format_issue(
