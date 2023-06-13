@@ -60,9 +60,31 @@ by adding `credo_check_error_handling_ecto_oban` to your list of dependencies in
 ```elixir
 def deps do
   [
-    {:credo_check_error_handling_ecto_oban, "~> 0.9.0"}
+    {:credo_check_error_handling_ecto_oban, "~> 0.9.0", only: [:dev, :test], runtime: false}
   ]
 end
+```
+
+### Add to your `.credo.exs`.
+
+Recent versions of `credo`:
+
+```elixir
+  checks: %{
+    enabled: [
+      # ...
+      {CredoCheckErrorHandlingEctoOban.Check.TransactionErrorInObanJob, []}
+    ]
+  }
+```
+
+Older versions of `credo`:
+
+```elixir
+  checks: [
+    # ...
+    {CredoCheckErrorHandlingEctoOban.Check.TransactionErrorInObanJob, []}
+  ]
 ```
 
 Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
