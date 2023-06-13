@@ -4,7 +4,7 @@ defmodule CredoCheckErrorHandlingEctoOban.MixProject do
   def project do
     [
       app: :credo_check_error_handling_ecto_oban,
-      version: "0.1.0",
+      version: "0.9.0",
       elixir: "~> 1.14",
       start_permanent: Mix.env() == :prod,
       deps: deps()
@@ -21,7 +21,7 @@ defmodule CredoCheckErrorHandlingEctoOban.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:credo, "~> 1.0", only: [:dev, :test], runtime: false}
+      {:credo, "~> 1.5", only: [:dev, :test], runtime: false}
     ]
   end
 end

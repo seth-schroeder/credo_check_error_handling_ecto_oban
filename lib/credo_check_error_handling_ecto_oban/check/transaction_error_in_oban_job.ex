@@ -1,7 +1,9 @@
 defmodule CredoCheckErrorHandlingEctoOban.Check.TransactionErrorInObanJob do
   @moduledoc """
-  Repo.transaction will return a 4 tuple when an error occurs inside a Multi.
-  Verify that errors are being mapped to a 2 tuple that Oban will interpret as expected.
+  `Ecto.Repo.transaction/2` will return a 4 tuple when an error occurs inside a Multi, per
+  https://hexdocs.pm/ecto/Ecto.Repo.html#c:transaction/2
+
+  Below is the warning that Oban gives when this happens in `iex`
 
   iex(14)> [warning] Expected Elixir.MyApp.MultiFailure.perform/1 to return:
   - `:ok`
@@ -15,6 +17,35 @@ defmodule CredoCheckErrorHandlingEctoOban.Check.TransactionErrorInObanJob do
   {:error, :alas, :poor_yorick, %{}}
 
   The job will be considered a success.
+
+  ----------------------------------------
+
+  Here is an example of the potential situation:
+
+  ```
+  def perform(%{}) do
+    Multi.new()
+    |> Multi.error(:alas, :poor_yorick)
+    |> Repo.transaction()
+  end
+  ```
+
+  Here is an example of the possible resolution (mapping the 4 tuple to a 2 tuple):
+
+  ```
+  def perform(%{}) do
+    Multi.new()
+    |> Multi.error(:alas, :poor_yorick)
+    |> Repo.transaction()
+    |> case do
+         {:ok, _} -> :ok
+         {:error, :alas, _, _} -> {:error, "we knew him well"}
+       end
+  end
+  ```
+
+  Please note that this custom credo check is known to have false positives. In order to address
+  that it would have to grow closer to an interpreter.
   """
 
   use Credo.Check,
@@ -22,8 +53,10 @@ defmodule CredoCheckErrorHandlingEctoOban.Check.TransactionErrorInObanJob do
     category: :warning,
     explanations: [
       check: """
-      Repo.transaction will return a 4 tuple when an error occurs inside a Multi.
-      Verify that errors are being mapped to a 2 tuple that Oban will interpret as expected.
+      `Ecto.Repo.transaction/2` will return a 4 tuple when an error occurs inside a Multi, per
+      https://hexdocs.pm/ecto/Ecto.Repo.html#c:transaction/2
+
+      Below is the warning that Oban gives when this happens in `iex`
 
       iex(14)> [warning] Expected Elixir.MyApp.MultiFailure.perform/1 to return:
       - `:ok`
@@ -37,6 +70,32 @@ defmodule CredoCheckErrorHandlingEctoOban.Check.TransactionErrorInObanJob do
       {:error, :alas, :poor_yorick, %{}}
 
       The job will be considered a success.
+
+      ----------------------------------------
+
+      Here is an example of the potential situation:
+
+      ```
+      def perform(%{}) do
+        Multi.new()
+        |> Multi.error(:alas, :poor_yorick)
+        |> Repo.transaction()
+      end
+      ```
+
+      Here is an example of the possible resolution (mapping the 4 tuple to a 2 tuple):
+
+      ```
+      def perform(%{}) do
+        Multi.new()
+        |> Multi.error(:alas, :poor_yorick)
+        |> Repo.transaction()
+        |> case do
+             {:ok, _} -> :ok
+             {:error, :alas, _, _} -> {:error, "we knew him well"}
+           end
+      end
+      ```
       """
     ]
 
